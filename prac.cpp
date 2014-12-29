@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
+#include <queue>
+
 
 using namespace std;
 
@@ -19,6 +21,8 @@ vector<trayecto> trayectos;
 typedef vector <vector <int> > Grafo;
 
 Grafo g;
+
+vector <int> padres;
 
 
 void buildGraph(){
@@ -50,8 +54,51 @@ void escriu(){
     }
 }
 
-int edmonsKarp(){
+bool bfs(Grafo&  rg, int s, int t){
+    vector <bool> visited(g.size(),false);
+    queue <int> q;
+    q.push(s);
+    visited[s] = true;
+    padres[s] = -1;
+    while(!q.empty()){
+        int u = q.front();
+        q.pop();
+        for (int i = 0; i < g.size(); ++i)
+        {
+            if(!visited[i] and rg[u][i] > 0){
+                q.push(i);
+                padres[i] = u;
+                visited[i] = true;
+            }
+        }
+    }
+    return (visited[t] == true);
+}
 
+int edmonsKarp(){
+    int maxFlow = 0;
+    padres = vector <int> (g.size());
+    Grafo rg = g;
+    int s = g.size()-2;
+    int t = g.size()-1;
+    int path_flow = 99999;
+    int cont = 0;
+    while(bfs(rg, g.size()-2, g.size()-1)){
+        for (int i = t; i != s; i = padres[i])
+        {
+            int u = padres[i];
+            path_flow = min(path_flow,rg[u][i]);            
+        }
+        for (int i = t; i != s; i = padres[i])
+        {
+            int u = padres[i];
+            rg[u][i] -= path_flow;
+            rg[i][u] += path_flow;
+        }
+        maxFlow += path_flow;
+        cout << path_flow << endl;
+    }
+    return maxFlow;
 }
 
 int main(){
@@ -79,4 +126,5 @@ int main(){
     buildGraph();
     int maxFlow = edmonsKarp();
     escriu();
+    cout << "FLOOOOOW  " << maxFlow << endl;  
 }
