@@ -76,6 +76,27 @@ bool bfs(Grafo&  rg, int s, int t) {
     return (visited[t] == true);
 }
 
+
+bool bfsFinal(Grafo&  rg, int s, int t) {
+    vector <bool> visited(g.size(), false);
+    queue <int> q;
+    q.push(s);
+    visited[s] = true;
+    padres[s] = -1;
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        for (int i = 0; i < g.size(); ++i) {
+            if (!visited[i]) {
+                q.push(i);
+                padres[i] = u;
+                visited[i] = true;
+            }
+        }
+    }
+    return (visited[t] == true);
+}
+
 void escriupares() {
     for (int i = 0; i < padres.size(); ++i) {
         cout << padres[i] << " ";
@@ -91,6 +112,7 @@ int edmonsKarp() {
     int t = g.size()-1;
     int path_flow = INT_MAX;
     int cont = 0;
+    int k = 0;
     while(bfs(rg, g.size()-2, g.size()-1)){
         for (int i = t; i != s; i = padres[i]) {
             int u = padres[i];
@@ -101,13 +123,29 @@ int edmonsKarp() {
             rg[u][i] -= path_flow;
             rg[i][u] += path_flow;
         }
-        //escriupares();
-        // cout <<endl<<endl;
-        // cout << "La k es: " << rg[g.size()-2][g.size()-1] << endl;
         maxFlow += path_flow;
-        //cout << path_flow << endl;
     }
-        escriu(rg);
+    // buscar s, t -> tirar bfs
+    for (int i = rg.size()-1; i > 0; --i) {
+        bool trobat = false;
+        for (int j = rg.size()-1; j > 0; --j) {
+            if (rg[i][j] == -1) trobat = true;
+            else if (rg[i][j] == 1) trobat = false;
+        }
+        if (trobat) {
+            s = i;
+            t = i + 1;
+            break;
+        }
+    }
+    bfsFinal(rg, s, t);
+    for (int i = t; i != s; i = padres[i]) {
+        int u = padres[i];
+        // cout << "aaa " << u << " " << i << endl;
+        k += rg[u][i];
+    }
+    // escriu(rg);
+    cout << "La k es: " << k << endl;
     return maxFlow;
 }
 
