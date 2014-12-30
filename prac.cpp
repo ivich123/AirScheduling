@@ -24,7 +24,6 @@ Grafo g;
 
 vector <int> padres;
 
-
 void buildGraph() {
     for (int i = 0; i < trayectos.size(); ++i) {
         g[2*i][2*i+1] = 1;
@@ -103,10 +102,12 @@ int edmonsKarp() {
             rg[i][u] += path_flow;
         }
         //escriupares();
-        //escriu(rg);
+        // cout <<endl<<endl;
+        // cout << "La k es: " << rg[g.size()-2][g.size()-1] << endl;
         maxFlow += path_flow;
         //cout << path_flow << endl;
     }
+        escriu(rg);
     return maxFlow;
 }
 
@@ -129,5 +130,5 @@ int main() {
     buildGraph();
     int maxFlow = edmonsKarp();
     cout << "El max flow es: " << maxFlow << endl;
-    //escriu(g);
+    // escriu(g);
 }
