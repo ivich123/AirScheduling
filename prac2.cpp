@@ -196,7 +196,7 @@ int main(){
     g2 = tranformGraph(g, trayectos, demands);
     int n = edmonsKarp(g2, padres);
     // writDemands(demands);
-    cout << "resultat " << -1*(demands[demands.size()-4] + n)-1  << endl;
+    cout << "resultat " << (demands[demands.size()-3] - n)-1  << endl;
 
     //writegraph(g2);
     //escriu(g);
