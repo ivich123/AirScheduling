@@ -145,30 +145,28 @@ bool bfs(gflow&  rg, int s, int t, vector <int>& padres) {
 int edmonsKarp(gflow g, vector<int>& padres) {
     int maxFlow = 0;
     gflow rg = g;
-    int s = g.size()-2;
-    int t = g.size()-1;
+    int s = g.size()-4;
+    int t = g.size()-3;
     int path_flow = INT_MAX;
     int cont = 0;
     int k = 0;
-    while(bfs(rg, g.size()-2, g.size()-1, padres)){
+    while(bfs(rg, g.size()-4, g.size()-3, padres)){
         for (int i = t; i != s; i = padres[i]) {
             int u = padres[i];
             path_flow = min(path_flow, rg[u][i]);
-        }
-        for (int i = t; i != s; i = padres[i]) {
-            int u = padres[i];
             rg[u][i] -= path_flow;
             rg[i][u] += path_flow;
         }
         maxFlow += path_flow;
     }
+
     cout << "La k es: " << maxFlow << endl;
     return maxFlow;
 }
 
 int main(){
     int max = 0;
-    int orig, dest, hs, hll;  
+    int orig, dest, hs, hll;
 	Grafo g;
 	vector<trayecto> trayectos;
 	vector <int> padres;
@@ -183,7 +181,7 @@ int main(){
     	trayectos.push_back(t);
         ++max;
     }
-    
+
     g = Grafo(max*2+4,vector<edge>(max*2+4));
     demands = vector <int> (max*2+2,0);
     padres = vector <int> (g.size(),0);
@@ -197,12 +195,13 @@ int main(){
     gflow g2;
     g2 = tranformGraph(g, trayectos, demands);
     int n = edmonsKarp(g2, padres);
-    //writDemands(demands);
+    // writDemands(demands);
+    cout << "resultat " << -1*(demands[demands.size()-4] + n)-1  << endl;
 
     //writegraph(g2);
     //escriu(g);
     //escriu(g);
     //int maxFlow = edmonsKarp();
     //escriu(g);
-    //cout << "FLOOOOOW  " << maxFlow << endl;  
+    //cout << "FLOOOOOW  " << maxFlow << endl;
 }
