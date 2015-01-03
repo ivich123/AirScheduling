@@ -22,23 +22,24 @@ struct edge {
 
 };
 
+
 typedef vector <vector <edge> > Grafo;
 typedef vector <vector <int> > gflow;
+typedef vector <pair<int, int> > viaje;
+typedef vector <int> vec;
+vector <viaje> viajes;
+vector <int> demands;
 
-
-void writDemands(vector <int> t){
-	for (int i = 0; i < t.size(); ++i)
-	{
+void writDemands(vector <int> t) {
+	for (int i = 0; i < t.size(); ++i) {
 		cout << t[i] << " ";
 	}
 	cout << endl;
 }
 
-void writegraph(gflow g2){
-	for (int i = 0; i < g2.size(); ++i)
-	{
-		for (int j = 0; j < g2.size(); ++j)
-		{
+void writegraph(gflow g2) {
+	for (int i = 0; i < g2.size(); ++i) {
+		for (int j = 0; j < g2.size(); ++j) {
 			cout << g2[i][j] << " ";
 		}
 		cout << endl;
@@ -47,12 +48,10 @@ void writegraph(gflow g2){
 }
 
 
-void escriu (Grafo g){
-	for (int i = 0; i < g.size(); ++i)
-	{
-		for (int j = 0; j < g.size(); ++j)
-		{
-			cout <<"[ " <<g[i][j].lb<< ","<<g[i][j].cap << "]" <<" ";
+void escribe (Grafo g) {
+	for (int i = 0; i < g.size(); ++i) {
+		for (int j = 0; j < g.size(); ++j) {
+			cout << "[" << g[i][j].lb << "," << g[i][j].cap << "]" << " ";
 		}
 		cout << endl;
 	}
@@ -60,10 +59,9 @@ void escriu (Grafo g){
 }
 
 
-void buildGraph(Grafo& g, vector<trayecto> trayectos){
+void buildGraph(Grafo& g, vector<trayecto> trayectos) {
 	// vamos a crear el grafo con demandas para despues transformarlo en uno de flujos.
-	for (int i = 0; i < trayectos.size(); ++i)
-	{
+	for (int i = 0; i < trayectos.size(); ++i) {
 		g[2*i][2*i+1].lb = 1;
 		g[2*i][2*i+1].cap = 1;
         //g[2*i+1][2*i].lb = -1;
@@ -87,10 +85,8 @@ void buildGraph(Grafo& g, vector<trayecto> trayectos){
         g[g.size()-3][g.size()-1].lb = trayectos.size();
 	}
 	//vamos a conectar los vuelos que cumplan nuestras restricciones y les pondremos lb = 0, y cap = 1;
-	for (int i = 0; i < trayectos.size(); ++i)
-	{
-		for (int j = 0; j < trayectos.size(); ++j)
-		{
+	for (int i = 0; i < trayectos.size(); ++i) {
+		for (int j = 0; j < trayectos.size(); ++j) {
 			if (trayectos[i].IDdest == trayectos[j].IDor) {
                 if (trayectos[j].hsal - trayectos[i].hlleg >= 15) {
                     g[2*j][2*i+1].lb = 0;
@@ -103,20 +99,19 @@ void buildGraph(Grafo& g, vector<trayecto> trayectos){
 }
 
 
-gflow tranformGraph(Grafo g, vector<trayecto> t, vector <int>& demands){
+gflow residualGraph(Grafo g, vector<trayecto> t, vector <int>& demands) {
 	gflow g2 = vector<vector <int> > (g.size(), vector<int>(g.size()));
 	int j = 0;
-	for (int i = 0; i < t.size(); ++i)
-	{
+	for (int i = 0; i < t.size(); ++i) {
 		demands[j] -=  g[2*i][2*i+1].lb;
 		demands[j+1] +=  g[2*i][2*i+1].lb;
 		j+=2;
 	}
-	for (int i = 0; i < g.size(); ++i)
-	{
-		for (int j = 0; j < g.size(); ++j)
-		{
-			if(g[i][j].cap != 0) g2[i][j] = g[i][j].cap -g[i][j].lb;
+	for (int i = 0; i < g.size(); ++i) {
+		for (int j = 0; j < g.size(); ++j) {
+			if (g[i][j].cap != 0) {
+                g2[i][j] = g[i][j].cap - g[i][j].lb;
+            }
 		}
 	}
 	return g2;
@@ -150,38 +145,104 @@ int edmonsKarp(gflow g, vector<int>& padres) {
     int path_flow = INT_MAX;
     int cont = 0;
     int k = 0;
-    while(bfs(rg, g.size()-4, g.size()-3, padres)){
+    while (bfs(rg, g.size()-4, g.size()-3, padres)) {
         for (int i = t; i != s; i = padres[i]) {
             int u = padres[i];
             path_flow = min(path_flow, rg[u][i]);
             rg[u][i] -= path_flow;
             rg[i][u] += path_flow;
         }
+        bfs(rg, g.size()-4, g.size()-3, padres);
+        for (int i = t; i != s; i = padres[i]) {
+            int u = padres[i];
+            int orig = (i / 2) + 1;
+            int dest = (u / 2) + 1;
+            int numViajes = (rg.size() - 4) / 2;
+            if (rg[u][i] > 0 and orig <= numViajes and dest <= numViajes) {
+                if (viajes.size() > 0) {
+                    viaje v = viajes[viajes.size()-1];
+                    if (orig == v[v.size()-1].second) {
+                        pair<int, int> p;
+                        p.first = orig;
+                        p.second = dest;
+                        viajes[viajes.size()-1].push_back(p);
+                    }
+                    else {
+                        pair<int, int> p;
+                        p.first = orig;
+                        p.second = dest;
+                        viaje v;
+                        v.push_back(p);
+                        viajes.push_back(v);
+                    }
+                }
+                else {
+                    pair<int, int> p;
+                    p.first = orig;
+                    p.second = dest;
+                    viaje v;
+                    v.push_back(p);
+                    viajes.push_back(v);
+                }
+                // viajes.push_back(tr);
+            }
+        }
         maxFlow += path_flow;
     }
 
-    cout << "La k es: " << maxFlow << endl;
     return maxFlow;
+}
+
+int calcularMinPilotos(int n) {
+    return (demands[demands.size()-3] - n) - 1;
+}
+
+bool existeViaje(vec& tra, int ori, int des) {
+    for (int i = 0; i < tra.size(); ++i) {
+        if (tra[i] == ori or tra[i] == des) return true;
+    }
+    return false;
+}
+
+void calcularTrayectos(int minPilotos) {
+    vector <vec> tray;
+    for (int i = 0; i < minPilotos; ++i) {
+        viaje v = viajes[i];
+        vec tra;
+        for (int j = v.size() - 1; j >= 0; --j) {
+            if (not existeViaje(tra, v[j].first, v[j].second)) {
+                tra.push_back(v[j].first);
+                tra.push_back(v[j].second);
+            }
+        }
+        tray.push_back(tra);
+    }
+    for (int i = 0; i < tray.size(); ++i)
+    {
+        vec v = tray[i];
+        for (int j = 0; j < v.size(); ++j)
+        {
+            cout << v[j] << " ";
+        }
+        cout << endl;
+    }
 }
 
 int main(){
     int max = 0;
     int orig, dest, hs, hll;
-	Grafo g;
-	vector<trayecto> trayectos;
-	vector <int> padres;
-	vector <int> demands;
-	while (cin >> orig >> dest >> hs >> hll)
-    {
-    	trayecto t;
-    	t.IDor = orig;
-    	t.IDdest = dest;
-    	t.hsal = hs;
-    	t.hlleg = hll;
-    	trayectos.push_back(t);
+    Grafo g;
+    vector<trayecto> trayectos;
+    vector <int> padres;
+    while (cin >> orig >> dest >> hs >> hll) {
+        trayecto t;
+        t.IDor = orig;
+        t.IDdest = dest;
+        t.hsal = hs;
+        t.hlleg = hll;
+        trayectos.push_back(t);
         ++max;
     }
-
     g = Grafo(max*2+4,vector<edge>(max*2+4));
     demands = vector <int> (max*2+2,0);
     padres = vector <int> (g.size(),0);
@@ -193,15 +254,18 @@ int main(){
     //g2 sera el grafo resultante de aplicar las tranformaciones para quitar las cotas.
     //demands quedara modificado con la tranformacion del nuevo grafo de flujos.
     gflow g2;
-    g2 = tranformGraph(g, trayectos, demands);
+    g2 = residualGraph(g, trayectos, demands);
     int n = edmonsKarp(g2, padres);
+    int minPilotos = calcularMinPilotos(n);
+    calcularTrayectos(minPilotos);
     // writDemands(demands);
-    cout << "resultat " << (demands[demands.size()-3] - n)-1  << endl;
+    cout << "resultat " << minPilotos  << endl;
+
 
     //writegraph(g2);
-    //escriu(g);
-    //escriu(g);
+    //escribe(g);
+    //escribe(g);
     //int maxFlow = edmonsKarp();
-    //escriu(g);
+    // escribe(g);
     //cout << "FLOOOOOW  " << maxFlow << endl;
 }
