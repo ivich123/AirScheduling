@@ -197,18 +197,18 @@ int calcularMinPilotos(int n) {
     return (demands[demands.size()-3] - n) - 1;
 }
 
-bool existeViaje(vec& tra, int ori, int des) {
+bool existeViaje(vector <int>& tra, int ori, int des) {
     for (int i = 0; i < tra.size(); ++i) {
         if (tra[i] == ori or tra[i] == des) return true;
     }
     return false;
 }
 
-void calcularTrayectos(int minPilotos) {
-    vector <vec> tray;
+vector <vector <int> > calcularTrayectos(int minPilotos) {
+    vector <vector <int> > tray;
     for (int i = 0; i < minPilotos; ++i) {
         viaje v = viajes[i];
-        vec tra;
+        vector <int> tra;
         for (int j = v.size() - 1; j >= 0; --j) {
             if (not existeViaje(tra, v[j].first, v[j].second)) {
                 tra.push_back(v[j].first);
@@ -219,9 +219,10 @@ void calcularTrayectos(int minPilotos) {
         tray.push_back(tra);
         cout << endl;
     }
+    return tray;
 }
 
-int main(){
+int main() {
     int max = 0;
     int orig, dest, hs, hll;
     Grafo g;
