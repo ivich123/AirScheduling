@@ -213,17 +213,10 @@ void calcularTrayectos(int minPilotos) {
             if (not existeViaje(tra, v[j].first, v[j].second)) {
                 tra.push_back(v[j].first);
                 tra.push_back(v[j].second);
+                cout << v[j].first << " " << v[j].second << " ";
             }
         }
         tray.push_back(tra);
-    }
-    for (int i = 0; i < tray.size(); ++i)
-    {
-        vec v = tray[i];
-        for (int j = 0; j < v.size(); ++j)
-        {
-            cout << v[j] << " ";
-        }
         cout << endl;
     }
 }
