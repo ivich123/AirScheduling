@@ -30,14 +30,14 @@ typedef vector <int> vec;
 vector <viaje> viajes;
 vector <int> demands;
 
-void writDemands(vector <int> t) {
+void writDemands(vector <int>& t) {
 	for (int i = 0; i < t.size(); ++i) {
 		cout << t[i] << " ";
 	}
 	cout << endl;
 }
 
-void writegraph(gflow g2) {
+void writegraph(gflow& g2) {
 	for (int i = 0; i < g2.size(); ++i) {
 		for (int j = 0; j < g2.size(); ++j) {
 			cout << g2[i][j] << " ";
@@ -48,7 +48,7 @@ void writegraph(gflow g2) {
 }
 
 
-void escribe (Grafo g) {
+void escribe (Grafo& g) {
 	for (int i = 0; i < g.size(); ++i) {
 		for (int j = 0; j < g.size(); ++j) {
 			cout << "[" << g[i][j].lb << "," << g[i][j].cap << "]" << " ";
@@ -59,7 +59,7 @@ void escribe (Grafo g) {
 }
 
 
-void buildGraph(Grafo& g, vector<trayecto> trayectos) {
+void buildGraph(Grafo& g, vector<trayecto>& trayectos) {
 	// vamos a crear el grafo con demandas para despues transformarlo en uno de flujos.
 	for (int i = 0; i < trayectos.size(); ++i) {
 		g[2*i][2*i+1].lb = 1;
@@ -99,7 +99,7 @@ void buildGraph(Grafo& g, vector<trayecto> trayectos) {
 }
 
 
-gflow residualGraph(Grafo g, vector<trayecto> t, vector <int>& demands) {
+gflow residualGraph(Grafo& g, vector<trayecto>& t, vector <int>& demands) {
 	gflow g2 = vector<vector <int> > (g.size(), vector<int>(g.size()));
 	int j = 0;
 	for (int i = 0; i < t.size(); ++i) {
@@ -137,7 +137,44 @@ bool bfs(gflow&  rg, int s, int t, vector <int>& padres) {
     return (visited[t] == true);
 }
 
-int edmonsKarp(gflow g, vector<int>& padres) {
+void guardarInfoImportante(gflow& g, vector<int>& padres, gflow& rg, int s, int t) {
+    bfs(rg, g.size()-4, g.size()-3, padres);
+    for (int i = t; i != s; i = padres[i]) {
+        int u = padres[i];
+        int orig = (i / 2) + 1;
+        int dest = (u / 2) + 1;
+        int numViajes = (rg.size() - 4) / 2;
+        if (rg[u][i] > 0 and orig <= numViajes and dest <= numViajes) {
+            if (viajes.size() > 0) {
+                viaje v = viajes[viajes.size()-1];
+                if (orig == v[v.size()-1].second) {
+                    pair<int, int> p;
+                    p.first = orig;
+                    p.second = dest;
+                    viajes[viajes.size()-1].push_back(p);
+                }
+                else {
+                    pair<int, int> p;
+                    p.first = orig;
+                    p.second = dest;
+                    viaje v;
+                    v.push_back(p);
+                    viajes.push_back(v);
+                }
+            }
+            else {
+                pair<int, int> p;
+                p.first = orig;
+                p.second = dest;
+                viaje v;
+                v.push_back(p);
+                viajes.push_back(v);
+            }
+        }
+    }
+}
+
+int edmonsKarp(gflow& g, vector<int>& padres) {
     int maxFlow = 0;
     gflow rg = g;
     int s = g.size()-4;
@@ -152,48 +189,14 @@ int edmonsKarp(gflow g, vector<int>& padres) {
             rg[u][i] -= path_flow;
             rg[i][u] += path_flow;
         }
-        bfs(rg, g.size()-4, g.size()-3, padres);
-        for (int i = t; i != s; i = padres[i]) {
-            int u = padres[i];
-            int orig = (i / 2) + 1;
-            int dest = (u / 2) + 1;
-            int numViajes = (rg.size() - 4) / 2;
-            if (rg[u][i] > 0 and orig <= numViajes and dest <= numViajes) {
-                if (viajes.size() > 0) {
-                    viaje v = viajes[viajes.size()-1];
-                    if (orig == v[v.size()-1].second) {
-                        pair<int, int> p;
-                        p.first = orig;
-                        p.second = dest;
-                        viajes[viajes.size()-1].push_back(p);
-                    }
-                    else {
-                        pair<int, int> p;
-                        p.first = orig;
-                        p.second = dest;
-                        viaje v;
-                        v.push_back(p);
-                        viajes.push_back(v);
-                    }
-                }
-                else {
-                    pair<int, int> p;
-                    p.first = orig;
-                    p.second = dest;
-                    viaje v;
-                    v.push_back(p);
-                    viajes.push_back(v);
-                }
-                // viajes.push_back(tr);
-            }
-        }
+        guardarInfoImportante(g, padres, rg, s, t);
         maxFlow += path_flow;
     }
 
     return maxFlow;
 }
 
-int calcularMinPilotos(int n) {
+int calcularMinimoPilotos(int n) {
     return (demands[demands.size()-3] - n) - 1;
 }
 
@@ -250,7 +253,7 @@ int main() {
     gflow g2;
     g2 = residualGraph(g, trayectos, demands);
     int n = edmonsKarp(g2, padres);
-    int minPilotos = calcularMinPilotos(n);
+    int minPilotos = calcularMinimoPilotos(n);
     calcularTrayectos(minPilotos);
     // writDemands(demands);
     cout << "resultat " << minPilotos  << endl;
