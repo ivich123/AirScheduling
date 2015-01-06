@@ -31,35 +31,6 @@ typedef vector <int> vec;
 vector <viaje> viajes;
 vector <int> demands;
 
-void writDemands(vector <int>& t) {
-	for (int i = 0; i < t.size(); ++i) {
-		cout << t[i] << " ";
-	}
-	cout << endl;
-}
-
-void writegraph(gflow& g2) {
-	for (int i = 0; i < g2.size(); ++i) {
-		for (int j = 0; j < g2.size(); ++j) {
-			cout << g2[i][j] << " ";
-		}
-		cout << endl;
-	}
-	cout << endl;
-}
-
-
-void escribe (Grafo& g) {
-	for (int i = 0; i < g.size(); ++i) {
-		for (int j = 0; j < g.size(); ++j) {
-			cout << "[" << g[i][j].lb << "," << g[i][j].cap << "]" << " ";
-		}
-		cout << endl;
-	}
-	cout << endl;
-}
-
-
 void buildGraph(Grafo& g, vector<trayecto>& trayectos) {
 	// vamos a crear el grafo con demandas para despues transformarlo en uno de flujos.
 	for (int i = 0; i < trayectos.size(); ++i) {
@@ -100,7 +71,7 @@ void buildGraph(Grafo& g, vector<trayecto>& trayectos) {
 }
 
 
-gflow residualGraph(Grafo& g, vector<trayecto>& t, vector <int>& demands) {
+gflow transformarGraph(Grafo& g, vector<trayecto>& t, vector <int>& demands) {
 	gflow g2 = vector<vector <int> > (g.size(), vector<int>(g.size()));
 	int j = 0;
 	for (int i = 0; i < t.size(); ++i) {
@@ -217,7 +188,7 @@ vector <vector <int> > calcularTrayectos(int minPilotos) {
             if (not existeViaje(tra, v[j].first, v[j].second)) {
                 tra.push_back(v[j].first);
                 tra.push_back(v[j].second);
-                // cout << v[j].first << " " << v[j].second << " ";
+                cout << v[j].first << " " << v[j].second << " ";
             }
         }
         tray.push_back(tra);
@@ -253,18 +224,9 @@ int main() {
     //g2 sera el grafo resultante de aplicar las tranformaciones para quitar las cotas.
     //demands quedara modificado con la tranformacion del nuevo grafo de flujos.
     gflow g2;
-    g2 = residualGraph(g, trayectos, demands);
+    g2 = transformarGraph(g, trayectos, demands);
     int n = edmonsKarp(g2, padres);
     int minPilotos = calcularMinimoPilotos(n);
-//    calcularTrayectos(minPilotos);
-    // writDemands(demands);
-    cout << ", " << minPilotos << ", " << (double)((clock() - tStart)/CLOCKS_PER_SEC) << endl;
-
-
-    //writegraph(g2);
-    //escribe(g);
-    //escribe(g);
-    //int maxFlow = edmonsKarp();
-    // escribe(g);
-    //cout << "FLOOOOOW  " << maxFlow << endl;
+    cout << minPilotos << endl;
+    calcularTrayectos(minPilotos);
 }
