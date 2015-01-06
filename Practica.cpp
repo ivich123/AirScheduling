@@ -1,3 +1,4 @@
+#include <time.h>
 #include <iostream>
 #include <vector>
 #include <stdio.h>
@@ -216,7 +217,7 @@ vector <vector <int> > calcularTrayectos(int minPilotos) {
             if (not existeViaje(tra, v[j].first, v[j].second)) {
                 tra.push_back(v[j].first);
                 tra.push_back(v[j].second);
-                cout << v[j].first << " " << v[j].second << " ";
+                // cout << v[j].first << " " << v[j].second << " ";
             }
         }
         tray.push_back(tra);
@@ -240,6 +241,7 @@ int main() {
         trayectos.push_back(t);
         ++max;
     }
+    clock_t tStart = clock();
     g = Grafo(max*2+4,vector<edge>(max*2+4));
     demands = vector <int> (max*2+2,0);
     padres = vector <int> (g.size(),0);
@@ -254,9 +256,9 @@ int main() {
     g2 = residualGraph(g, trayectos, demands);
     int n = edmonsKarp(g2, padres);
     int minPilotos = calcularMinimoPilotos(n);
-    calcularTrayectos(minPilotos);
+//    calcularTrayectos(minPilotos);
     // writDemands(demands);
-    cout << "resultat " << minPilotos  << endl;
+    cout << ", " << minPilotos << ", " << (double)((clock() - tStart)/CLOCKS_PER_SEC) << endl;
 
 
     //writegraph(g2);
